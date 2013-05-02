@@ -28,7 +28,7 @@ void init_Servo(void){
 	P0 = 0;
 	
 	for(ii =0; ii < NUM_OF_SERVOS; ii++){
-		max_Servo_Set_Angle[ii] = starting_Angles[ii];
+		set_Angle(ii, starting_Angles[ii]);
 		servo_Set_Angle[ii] = starting_Angles[ii];
 	}
 }

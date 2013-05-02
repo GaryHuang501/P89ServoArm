@@ -1,13 +1,13 @@
 #################
 ##CrossIDE
 #################
-.bat
-.asm
-.hex
-.lkr
-.lst
-.map
-.obj
+*.bat
+*.asm
+*.hex
+*.lkr
+*.lst
+*.map
+*.obj
 #################
 ## Eclipse
 #################
