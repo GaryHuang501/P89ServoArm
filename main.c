@@ -17,10 +17,11 @@ void init_Servo(void);
 void init_ADC(void);
 void init_fans(void);
 
+//Req: angles must >= 0 && <= 175, bicep < 145
 void init_Servo(void){
 
 	unsigned char ii = 0; 
- 	unsigned char starting_Angles[] = {WRIST_ANGLE + SERVO_WRIST_OFFSET, ELBOW_ANGLE + SERVO_ELBOW_OFFSET,
+ 	unsigned char starting_Angles[] = {WRIST_ANGLE + SERVO_WRIST_OFFSET, 180 - ELBOW_ANGLE + SERVO_ELBOW_OFFSET,
  										  BICEP_ANGLE + SERVO_BICEP_OFFSET, SHOULDER_ANGLE + SERVO_SHOULDER_OFFSET};
  	
 	P0M1 = 0x00;//set low to 0 and high to 1 for output
@@ -28,8 +29,8 @@ void init_Servo(void){
 	P0 = 0;
 	
 	for(ii =0; ii < NUM_OF_SERVOS; ii++){
-		set_Angle(ii, starting_Angles[ii]);
-		servo_Set_Angle[ii] = starting_Angles[ii];
+		max_Servo_Angle[ii] = starting_Angles[ii];
+		servo_Angle[ii] = starting_Angles[ii];
 	}
 }
 
@@ -90,7 +91,7 @@ void init_Fans(void)
 	P2_1 = 1;
 	P2_2 = 1;
 	P2_3 = 1;
-	P2_4 = 0;
+	FIRE_FAN_PORT = 0;
 }
 
 void main(void)

@@ -36,7 +36,7 @@ static void calculate_Timer_Cycle(void);
 static void set_Phases(void);
 static void slow_Down_Servo(void);
 static void set_Index_to_Servo_Port(void);
-static void Wait20ms(void);
+static void Wait25ms(void);
 
 //Stores angle converted to clock cycles
 static idata unsigned int timer0_Servo_PWM_Width[NUM_OF_SERVOS]; 
@@ -51,11 +51,6 @@ static volatile data unsigned int TL0_Phase_FirstDelay;
 
 //Which servo to turn off
 static data unsigned char servo_Priority[NUM_OF_SERVOS]; //The one the interrupt uses, can't use servo_Index, don't want interrrupt to trigger during calculations 
-
-//Set angles
-idata unsigned int servo_Set_Angle[NUM_OF_SERVOS];
-idata unsigned char max_Servo_Set_Angle[NUM_OF_SERVOS];
-idata const char servo_Offset[NUM_OF_SERVOS] = {SERVO_WRIST_OFFSET, SERVO_ELBOW_OFFSET, SERVO_BICEP_OFFSET, SERVO_SHOULDER_OFFSET};
 
 //Interrupt phases 
 static volatile char phase = 0;
@@ -119,14 +114,14 @@ static void Timer1_ISR (void) interrupt 3 using 1
 
 }
 
-static void Wait20ms (void)
+static void Wait25ms (void)
 {
 	_asm
 	mov R2, #1
-L13: mov R1, #200
+L13: mov R1, #250
 L12: mov R0, #184
 L11: djnz R0, L11 ; 2 machine cycles-> 2*0.27126us*184=100us
-    djnz R1, L12 ; 100us*200=0.020s
+    djnz R1, L12 ; 100us*250=0.025s
     djnz R2, L13 ; 0.020s * 1
     _endasm;
 }
@@ -138,18 +133,18 @@ static void slow_Down_Servo(void)
 
 	unsigned char ii = 0;
 	
-	Wait20ms();
+	Wait25ms();
 
 	for (ii = 0; ii < NUM_OF_SERVOS; ii++)
 	{
 		
-		if (max_Servo_Set_Angle[ii] >  servo_Set_Angle[ii])
+		if (max_Servo_Angle[ii] >   servo_Angle[ii])
 		{
-			servo_Set_Angle[ii]++;
+			 servo_Angle[ii]++;
 		}
-		else if (max_Servo_Set_Angle[ii] <  servo_Set_Angle[ii])
+		else if (max_Servo_Angle[ii] <   servo_Angle[ii])
 		{
-			servo_Set_Angle[ii]--;
+			 servo_Angle[ii]--;
 		}
 	}
 
@@ -231,7 +226,8 @@ static void calculate_Timer_Cycle(void)
 	for ( ii = 0; ii < NUM_OF_SERVOS; ii++)
 	{
 
-		pulse_Calculation_Temp = servo_Set_Angle[ii] + servo_Offset[ii];	
+		pulse_Calculation_Temp =  servo_Angle[ii];	
+		
 		if(pulse_Calculation_Temp > MAX_ANGLE){
 			pulse_Calculation_Temp = MAX_ANGLE;
 		}	
