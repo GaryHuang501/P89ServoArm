@@ -11,17 +11,18 @@
 #include "Global.h"
 #include "Positioning.h"
 
-
 #define XTAL 7373000L
 #define BAUD 115200L
 
 #define FIRE_FAN_TOGGLE -1
-#define EXTINGUISH -2
+#define COMMENCE_EXTINGUISH -2
 #define SAFETY -3
 #define NONE -4
 
-void get_Command(void);
 void init_Serial_Port(void);
+void execute_Command(void);
+
+static void get_Command(char*, unsigned char*);
 
 //P1.0 and P1.1 are used for serial
 void init_Serial_Port(void){
@@ -34,13 +35,37 @@ void init_Serial_Port(void){
 	P1M1 = 0x00; //Enable pins RxD and Txd
 	P1M2 = 0x00; //Enable pins RxD and Txd
 }
-//check if any commands from serial
-void get_Command(void)
+
+
+
+void execute_Command(void)
 {
-	unsigned int angle = 0;
-	char buffer[5];
+	unsigned char angle = 0;
 	char command = NONE;
 	
+	get_Command(&command, &angle);
+	
+	if(command == FIRE_FAN_TOGGLE){
+		FIRE_FAN_PORT ^= 1;
+	}
+	else if(command == COMMENCE_EXTINGUISH){
+		scan_Destroy();
+	}
+	else if(command == SAFETY){
+		safety_Position();
+	}
+	else if(command != NONE){
+		set_Max_Servo_Angle(command % NUM_OF_SERVOS, angle, 0);
+	}
+		
+}
+
+//check if any commands from serial
+static void get_Command(char* command, unsigned char* angle)
+{
+
+	char buffer[5];
+
 	gets(buffer);
 	buffer[4] = '\0';
 	RI = 0;
@@ -50,7 +75,7 @@ void get_Command(void)
 			return;
 		}
 		else{
-			angle = atoi(buffer + 1);
+			*angle = atoi(buffer + 1);
 		}
 	}
 	
@@ -58,47 +83,35 @@ void get_Command(void)
 	switch(buffer[0])
 	{
 		case('s'):
-			command = SHOULDER;	
+			*command = SHOULDER;	
 			break;
 		case('b'):					
-			if(angle <= 135){
-				command = BICEP;
+			if(*angle <= 135){
+				*command = BICEP;
 			}
 			else{
 				printf_tiny("Bicep max angle of 145");
 			}
 			break;
 		case('e'):
-			command = ELBOW;
+			*command = ELBOW;
 			break;
 		case('w'):
-			command = WRIST;
-			break;
-		case('t'):
-			command = FIRE_FAN_TOGGLE;
-			break;
-		case('x'):
-			command = SAFETY;
+			*command = WRIST;
 			break;
 		case('f'):
-			command = EXTINGUISH;
+			*command = FIRE_FAN_TOGGLE;
+			break;
+		case('x'):
+			*command = SAFETY;
+			break;
+		case('C'):
+			*command = COMMENCE_EXTINGUISH;
 			break;
 	}
 	
-	if(command == FIRE_FAN_TOGGLE){
-		FIRE_FAN_PORT ^= 1;
-	}
-	else if(command == EXTINGUISH){
-		//TODO:
-	}
-	else if(command == SAFETY){
-		safety_Position();
-	}
-	else if(command != NONE){
-		set_Max_Servo_Angle(command % NUM_OF_SERVOS, angle);
-	}
-			
 }
+
 
 
 #endif

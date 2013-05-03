@@ -83,7 +83,7 @@ void main(void)
 		
 		if (RI == 1)
 		{
-			get_Command();
+			execute_Command();
 		}
 		
 		set_Pulse_Width();

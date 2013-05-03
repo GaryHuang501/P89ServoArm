@@ -8,20 +8,14 @@
 #include <p89lpc9351.h>
 #include "Delay.h"
 
-#define IR_PORT P2_0 
-
-#define  READ0 AD0DAT0
-#define  READ1 AD0DAT1
-#define  READ2 AD0DAT2
-#define  READ3 AD0DAT3
-
+#define ADC_VALUE AD0DAT3
 #define NUM_READINGS 8
-#define THRESHOLD_ADC 123 //Each Step is 0.014
+#define THRESHOLD_ADC 80 //Each Step is 0.014
 
 void init_ADC(void);
 unsigned char checkForFlame();
 
-static unsigned char getMedian(float[]);
+static unsigned char getMedian(unsigned char[]);
 
 void init_ADC(void)
 {
@@ -33,23 +27,25 @@ void init_ADC(void)
 	ADCON0 = 0x05; //Enable the converter and start immediately
 }
 
-//Return ADC value of sensor
+//Return ADC value of sensor, 0 if none found
 unsigned char checkForFlame()
 {
 	unsigned char ii = 0;
-	float reading[NUM_READINGS];
+	unsigned char reading[NUM_READINGS];
+	unsigned char result = 0;
 	
 	for(ii = 0; ii < NUM_READINGS; ii++)
 	{
-		reading[ii] = AD0DAT3;
+		reading[ii] = ADC_VALUE;
+		printf_tiny(reading[ii]);
 		wait5ms();
 	}
-
+	
 	return getMedian(reading);
 }
 
 //Return the lower median of the 8 sensor readings 
-static unsigned char getMedian(float reading[])
+static unsigned char getMedian(unsigned char reading[])
 {
 	unsigned char ii = 0;
 	unsigned char jj = 0;
@@ -80,12 +76,12 @@ static unsigned char getMedian(float reading[])
 	}
 
 	//Test if voltage value > threshold
-	if (reading[NUM_READINGS / 2 - 1] < THRESHOLD_ADC){
+	result = reading[NUM_READINGS / 2 - 1];
+	
+	if (result < THRESHOLD_ADC){
 		result = 0;
 	}
-	else{
-		result = 1;
-	}
+
 	
 	return result;
 }
