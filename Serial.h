@@ -1,4 +1,3 @@
-
 //**Reads command from serial 
 
 #ifndef Serial_H_
@@ -12,17 +11,36 @@
 #include "Global.h"
 #include "Positioning.h"
 
+
+#define XTAL 7373000L
+#define BAUD 115200L
+
+#define FIRE_FAN_TOGGLE -1
+#define EXTINGUISH -2
+#define SAFETY -3
+#define NONE -4
+
 void get_Command(void);
+void init_Serial_Port(void);
 
-
-
+//P1.0 and P1.1 are used for serial
+void init_Serial_Port(void){
+	
+	BRGCON = 0x00; //Make sure the baud rate generator is off
+	BRGR1 = ((XTAL/BAUD)-16)/0x100;
+	BRGR0 = ((XTAL/BAUD)-16)%0x100;
+	BRGCON = 0x03; //Turn-on the baud rate generator
+	SCON = 0x52; //Serial port in mode 1, ren, txrdy, rxempty
+	P1M1 = 0x00; //Enable pins RxD and Txd
+	P1M2 = 0x00; //Enable pins RxD and Txd
+}
 //check if any commands from serial
 void get_Command(void)
 {
 	unsigned int angle = 0;
 	char buffer[5];
 	char command = NONE;
-	printf_tiny("command\n");
+	
 	gets(buffer);
 	buffer[4] = '\0';
 	RI = 0;
@@ -56,16 +74,22 @@ void get_Command(void)
 		case('w'):
 			command = WRIST;
 			break;
-		case('f'):
+		case('t'):
 			command = FIRE_FAN_TOGGLE;
 			break;
 		case('x'):
 			command = SAFETY;
 			break;
+		case('f'):
+			command = EXTINGUISH;
+			break;
 	}
 	
 	if(command == FIRE_FAN_TOGGLE){
 		FIRE_FAN_PORT ^= 1;
+	}
+	else if(command == EXTINGUISH){
+		//TODO:
 	}
 	else if(command == SAFETY){
 		safety_Position();

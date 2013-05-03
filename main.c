@@ -5,16 +5,14 @@
 #include "Servo_PWM.h"
 #include "Serial.h"
 #include "Positioning.h"
+#include "Delay.h"
+#include "IR.h"
 
-//======Constants 
-
-#define XTAL 7373000L
-#define BAUD 115200L
+#define COOLING_FANS P2_3
 
 void set_Timer0 (void);
 void set_Timer1 (void);
 void init_Servo(void);
-void init_ADC(void);
 void init_fans(void);
 
 //Req: angles must >= 0 && <= 175, bicep < 145
@@ -56,53 +54,27 @@ void set_Timer1 (void)
 	TR1 = 1; // Start timer 1  
 }
 
-//P1.0 and P1.1 are used for serial
-void init_Serial_Port(void)
-{
-	BRGCON = 0x00; //Make sure the baud rate generator is off
-	BRGR1 = ((XTAL/BAUD)-16)/0x100;
-	BRGR0 = ((XTAL/BAUD)-16)%0x100;
-	BRGCON = 0x03; //Turn-on the baud rate generator
-	SCON = 0x52; //Serial port in mode 1, ren, txrdy, rxempty
-	P1M1 = 0x00; //Enable pins RxD and Txd
-	P1M2 = 0x00; //Enable pins RxD and Txd
-}
-
-void init_ADC(void)
-{
-	//Add interrupt remember
-	//Adcon
-	P1M1 = (0xE0|P1M1);
-	P1M2 = (0x1F&P1M2);
-	
-	BURST0 = 1;
-	ADMODB = CLK0; //ADC1 clock is 7.3728MHz/2
-	ADINS  = 0x08; // Select the four channels for conversion
-	ADCON0 = 0x05;//Enable the converter and start immediately
-	//while((ADCI1 & ADCON1) ==0 ); //Wait for first conversion to complete
-}
 
 void init_Fans(void)
 {
 	P2M1 = 0x00;
 	P2M2 = 0xFF;
 	
-	P2_0 = 1;
-	P2_1 = 1;
-	P2_2 = 1;
-	P2_3 = 1;
+	COOLING_FANS = 1; //turns low
 	FIRE_FAN_PORT = 0;
 }
 
 void main(void)
 {	
-	EA = 0;
 	init_Servo();
+
+	EA = 0;
 	set_Pulse_Width();
 	set_Timer0();
-	set_Timer1();
+	//set_Timer1();
 	init_Serial_Port();
-	Wait1S();
+	init_ADC();
+	wait1S();
 	init_Fans();
 	printf_tiny("Ready for commands!\n");
 	

@@ -12,6 +12,7 @@
 #include <math.h>
 #include <p89lpc9351.h>
 #include "Global.h"
+#include "Delay.h"
 
 #define SERVO_PORTS P0 //PWM PORTS
 
@@ -36,7 +37,6 @@ static void calculate_Timer_Cycle(void);
 static void set_Phases(void);
 static void slow_Down_Servo(void);
 static void set_Index_to_Servo_Port(void);
-static void Wait25ms(void);
 
 //Stores angle converted to clock cycles
 static idata unsigned int timer0_Servo_PWM_Width[NUM_OF_SERVOS]; 
@@ -114,18 +114,6 @@ static void Timer1_ISR (void) interrupt 3 using 1
 
 }
 
-static void Wait25ms (void)
-{
-	_asm
-	mov R2, #1
-L13: mov R1, #250
-L12: mov R0, #184
-L11: djnz R0, L11 ; 2 machine cycles-> 2*0.27126us*184=100us
-    djnz R1, L12 ; 100us*250=0.025s
-    djnz R2, L13 ; 0.020s * 1
-    _endasm;
-}
-
 
 //Slows down servos, adding 1 degree per 20ms
 static void slow_Down_Servo(void)
@@ -133,7 +121,7 @@ static void slow_Down_Servo(void)
 
 	unsigned char ii = 0;
 	
-	Wait25ms();
+	wait30ms();
 
 	for (ii = 0; ii < NUM_OF_SERVOS; ii++)
 	{
@@ -150,7 +138,7 @@ static void slow_Down_Servo(void)
 
 }
 
-//timer0_Servo_PWM_Width is sorted from small to big using bubblesort
+//timer0_Servo_PWM_Width is sorted from small to big using insert
 //Then stores what servo should be turn off first (smallest)
 static void set_Servo_Priority(void)
 {

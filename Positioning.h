@@ -1,3 +1,5 @@
+//change servo position and calculate position
+
 #ifndef Positioning_H_
 #define Positioning_H_
 
@@ -13,10 +15,10 @@ void set_Max_Servo_Angle(unsigned char servo_Index, unsigned int angle)
 	if(servo_Index == ELBOW){
 		angle = 180 - angle;
 	}
-	/*
+	
 	if(servo_Offset[servo_Index] < 0 && abs(servo_Offset[servo_Index]) > angle){
 		angle = 0;
-	}*/
+	}
 	else if( (servo_Offset[servo_Index] + angle) > MAX_ANGLE){
 		angle = MAX_ANGLE;
 	}
@@ -25,7 +27,6 @@ void set_Max_Servo_Angle(unsigned char servo_Index, unsigned int angle)
 	}
 	
 	max_Servo_Angle[servo_Index] = angle;
-	printf_tiny("angle is %d and index is %d\n", angle, servo_Index);
 	
 }
 
