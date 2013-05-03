@@ -1,15 +1,26 @@
 //change servo position and calculate position
+// +X is left , -X is right, Y is normal
 
 #ifndef Positioning_H_
 #define Positioning_H_
 
 #include <stdlib.h>
+#include <math.h>
 #include "Servo_PWM.h"
 #include "IR.h"
 
+//mm
+#define CANDLE_HEIGHT 40 //up to top of candle wick
+#define WRIST_LENGTH 60
+#define BICEP_LENGTH 160
+#define ELBOW_LENGTH 200
+#define SHOULDER_LENGTH 97
+
 #define MAX_NUM_FLAMES 5
 
-struct Flame
+idata unsigned char limb_Length[] = {WRIST_LENGTH, BICEP_LENGTH, ELBOW_LENGTH, SHOULDER_LENGTH};
+
+idata struct Flame
 {
 	int distance[MAX_NUM_FLAMES];
 	int shoulder_Angle[MAX_NUM_FLAMES];	
@@ -19,14 +30,12 @@ void set_Max_Servo_Angle(unsigned char, unsigned int, char);
 void safety_Position(void);
 void wait_Servo_Finish(unsigned char ii);
 void scan_Destroy();
+float to_Rad(unsigned char);
 
 static void initial_Scan_Position();
 static void begin_Scanning();
-static int calculate_Flame_Position(void);
+static int calculate_X_Flame_Position(void);
 static void extinguish(void);
-
-
-
 
 //make servo rotate up to the passed angle
 //@param: shouldWait if true means control flow will not leave the function until servo has finished moving
@@ -114,7 +123,7 @@ static void begin_Scanning(void)
 		while(max_Servo_Angle[WRIST]  > 0)
 		{
 			if (checkForFlame() > 0 && foundFlame == 0){
-				flame.distance[flame_Count++] = calculate_Flame_Position();
+				flame.distance[flame_Count++] = calculate_X_Flame_Position();
 				flame.shoulder_Angle[flame_Count++] = max_Servo_Angle[WRIST];
 				foundFlame = 1;
 			}
@@ -126,20 +135,49 @@ static void begin_Scanning(void)
 	}
 }
 
-static int calculate_Flame_Position(void)
+//Returns the X position of the flame relative to the shoulder servo
+static int calculate_X_Flame_Position(void)
 {
-	return 0;
+	const char NUM_LIMBS = 5;
+	unsigned char ii = 0;
+	unsigned int y_IR = 0;
+	unsigned int x_IR = 0;
+	unsigned int angle_IR = 0;
+
+	//get X and Y of IR sensor first
+	for(ii = 0; ii < 5; ii++){
+		y_IR += sinf(to_Rad(servo_Angle[ii])) * limb_Length[ii];
+		x_IR += cosf(to_Rad(servo_Angle[ii])) * limb_Length[ii];
+		
+		if(servo_Angle[ii] > 90)
+			angle_IR += 270 - (180 - servo_Angle[ii]); //270 because of 3PI/2
+		else
+			angle_IR += 270 - servo_Angle[ii];
+	}
+	
+	return ((y_IR - CANDLE_HEIGHT) / tanf(to_Rad(angle_IR)) + x_IR);
+	
+}
+
+static float to_Rad(unsigned char angle)
+{
+	return (((float)angle) * 180 / 3.14159);	
 }
 
 static void extinguish(void)
 {
 	unsigned char ii = 0;
 	
+	set_Max_Servo_Angle(ELBOW, 90, 1);
+	set_Max_Servo_Angle(WRIST, 0, 1);
+	
 	for(ii = 0; ii < MAX_NUM_FLAMES; ii++)
 	{
+		
 		if(flame.distance[ii] != - 1)
 		{
-			
+		
+		set_Max_Servo_Angle(SHOULDER, flame.shoulder_Angle[ii], 1);
 			
 		}
 	}
