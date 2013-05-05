@@ -12,7 +12,7 @@
 #include <math.h>
 #include <p89lpc9351.h>
 #include "Global.h"
-#include "Delay.h"
+#include "Util.h"
 
 #define SERVO_PORTS P0 //PWM PORTS
 
@@ -155,7 +155,7 @@ static void set_Servo_Priority(void)
 		servo_Index[ii] = ii;
 	}
 
-	//-----------------Start sorting
+	//-----------------Start sorting 
 	for (jj = 0; jj < NUM_OF_SERVOS; jj++)
 	{
 

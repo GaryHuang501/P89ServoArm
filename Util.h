@@ -1,7 +1,7 @@
-//Overview: Contains delay functions in assembly (non interrupt)
+//Overview: Contains delay functions in assembly (non interrupt) and selection sort
 
-#ifndef Delay_H_
-#define Delay_H_
+#ifndef Util_H_
+#define Util_H_
 
 #include <p89lpc9351.h>
 
@@ -9,7 +9,6 @@ void wait5ms(void);
 void wait30ms(void);
 void wait50ms(void);
 void wait1S (void);
-
 
 void wait5ms (void)
 {
@@ -36,18 +35,6 @@ L11: djnz R0, L11 ; 2 machine cycles-> 2*0.27126us*184=100us
 }
 
 
-void wait50ms (void)
-{
-	_asm
-	mov R2, #2
-L23: mov R1, #250
-L22: mov R0, #184
-L21: djnz R0, L21 ; 2 machine cycles-> 2*0.27126us*184=100us
-    djnz R1, L22 ; 100us*250=0.025s
-    djnz R2, L23 ; 0.025s*2=50ms
-    _endasm;
-}
-
 void wait1S (void)
 {
 	_asm
@@ -59,5 +46,10 @@ L01: djnz R0, L01 ; 2 machine cycles-> 2*0.27126us*184=100us
     djnz R2, L03 ; 0.025s*40=1s
     _endasm;
 }
+
+
+
+
+
 
 #endif

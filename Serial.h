@@ -17,7 +17,8 @@
 #define FIRE_FAN_TOGGLE -1
 #define COMMENCE_EXTINGUISH -2
 #define SAFETY -3
-#define NONE -4
+#define STANDBY - 4
+#define NONE -5
 
 void init_Serial_Port(void);
 void execute_Command(void);
@@ -40,23 +41,27 @@ void init_Serial_Port(void){
 
 void execute_Command(void)
 {
-	unsigned char angle = 0;
-	char command = NONE;
+	idata unsigned char angle = 0;
+	idata char command = NONE;
 	
 	get_Command(&command, &angle);
 	
 	if(command == FIRE_FAN_TOGGLE){
 		FIRE_FAN_PORT ^= 1;
 	}
+	else if(command == SAFETY){
+		safety_Position();
+	}
 	else if(command == COMMENCE_EXTINGUISH){
 		scan_Destroy();
 	}
-	else if(command == SAFETY){
-		safety_Position();
+	else if (command == STANDBY){
+		initial_Scan_Position();
 	}
 	else if(command != NONE){
 		set_Max_Servo_Angle(command % NUM_OF_SERVOS, angle, 0);
 	}
+
 		
 }
 
@@ -64,13 +69,22 @@ void execute_Command(void)
 static void get_Command(char* command, unsigned char* angle)
 {
 
-	char buffer[5];
-
-	gets(buffer);
-	buffer[4] = '\0';
+	idata char buffer[5];
+	idata unsigned char ii = 0;
+	
+	buffer[ii] = getchar();
+	
+	
+	while(buffer[ii] != '\0' && buffer[ii] != '\n' && buffer[ii] != '\r' && ii < 5 - 1)
+	{
+		buffer[++ii] = getchar();
+	}
+	
+	buffer[++ii] = '\0';
+	
 	RI = 0;
 	
-	if(buffer[0] != 'f' && buffer[0] != 'x'){
+	if(buffer[0] != 'f' && buffer[0] != 'x' && buffer[0] != 'C'){
 		if(strlen(buffer) < 2){
 			return;
 		}
@@ -90,7 +104,7 @@ static void get_Command(char* command, unsigned char* angle)
 				*command = BICEP;
 			}
 			else{
-				printf_tiny("Bicep max angle of 145");
+				printf_tiny("Max is 145");
 			}
 			break;
 		case('e'):
@@ -107,6 +121,9 @@ static void get_Command(char* command, unsigned char* angle)
 			break;
 		case('C'):
 			*command = COMMENCE_EXTINGUISH;
+			break;
+		case('R'):
+			*command = STANDBY;
 			break;
 	}
 	
