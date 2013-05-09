@@ -39,7 +39,7 @@ static void slow_Down_Servo(void);
 static void set_Index_to_Servo_Port(void);
 
 //Stores angle converted to clock cycles
-static idata unsigned int timer0_Servo_PWM_Width[NUM_OF_SERVOS]; 
+static data unsigned int timer0_Servo_PWM_Width[NUM_OF_SERVOS]; 
 
 //Length of each pulse for timer
 static volatile data unsigned int TH0_Phase[NUM_OF_SERVOS]; 

@@ -2,6 +2,7 @@
 #define Trig_H_
 
 #include <stdlib.h>
+#include "Positioning.h"
 
 code float tan_val[] = {
 0.0001, 0.0175, 0.0349, 0.0524, 0.0699, 0.0875, 0.1051, 0.1228, 0.1405, 0.1584, 0.1763, 0.1944, 0.2126, 0.2309, 0.2493, 
@@ -13,11 +14,89 @@ code float tan_val[] = {
 0.0001 };
 
 code float cos_val[] = {
-0.0001, 0.9998, 0.9994, 0.9986, 0.9976, 0.9962, 0.9945, 0.9925, 0.9903, 0.9877, 0.9848, 0.9816, 0.9781, 0.9744, 0.9703, 
+1.0000, 0.9998, 0.9994, 0.9986, 0.9976, 0.9962, 0.9945, 0.9925, 0.9903, 0.9877, 0.9848, 0.9816, 0.9781, 0.9744, 0.9703, 
 0.9659, 0.9613, 0.9563, 0.9511, 0.9455, 0.9397, 0.9336, 0.9272, 0.9205, 0.9135, 0.9063, 0.8988, 0.8910, 0.8829, 0.8746, 
 0.8660, 0.8572, 0.8480, 0.8387, 0.8290, 0.8192, 0.8090, 0.7986, 0.7880, 0.7771, 0.7660, 0.7547, 0.7431, 0.7314, 0.7193, 
 0.7071, 0.6947, 0.6820, 0.6691, 0.6561, 0.6428, 0.6293, 0.6157, 0.6018, 0.5878, 0.5736, 0.5592, 0.5446, 0.5299, 0.5150, 
 0.5000, 0.4848, 0.4695, 0.4540, 0.4384, 0.4226, 0.4067, 0.3907, 0.3746, 0.3584, 0.3420, 0.3256, 0.3090, 0.2924, 0.2756, 
 0.2588, 0.2419, 0.2250, 0.2079, 0.1908, 0.1736, 0.1564, 0.1392, 0.1219, 0.1045, 0.0872, 0.0698, 0.0523, 0.0349, 0.0175, 
-0.0001 };
+0.0000 };
 
+//ratio 0.1 to 10.0 using 0.1 increments
+code unsigned char atan_val[] = {0, 6, 11, 17, 22, 27, 31, 35, 39, 42, 45, 48, 50, 52, 
+54, 56, 58, 60, 61, 62, 63, 65, 66, 67, 67, 68, 69, 70, 70, 
+71, 72, 72, 73, 73, 74, 74, 74, 75, 75, 76, 76, 76, 77, 77, 
+77, 77, 78, 78, 78, 78, 79, 79, 79, 79, 80, 80, 80, 80, 80, 
+80, 81, 81, 81, 81, 81, 81, 81, 82, 82, 82, 82, 82, 82, 82, 
+82, 82, 83, 83, 83, 83, 83, 83, 83, 83, 83, 83, 83, 83, 84, 
+84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84, 84 };
+
+float tan(unsigned int angle);
+unsigned char atan(float ratio);
+unsigned char asin(float ratio);
+float sin(int angle);
+float cos(int angle);
+
+#define ASIN_WEIGHT_APPROXIMATION 1.2
+//using arc length approximation s= r * theta * approximation weight
+unsigned char asin(float ratio){
+	return (unsigned char)((ratio / 3.14 * 180 * ASIN_WEIGHT_APPROXIMATION) + 0.5);	
+}
+
+unsigned char atan(float ratio){
+
+	if(ratio > 10)
+	{
+		ratio = 10;
+	}
+	else if(ratio < 0)
+	{
+		ratio = 0;
+	}
+	
+	return atan_val[(unsigned char)(ratio * 10 + 0.5)];	
+}
+
+float tan(unsigned int angle){
+	
+	unsigned char sign = 1;
+	
+	if(angle > 90 && angle < 180 || angle > 270 && angle < 360)
+		sign = -1;
+	
+	return tan_val[angle % 90] * sign;
+}
+
+float cos(int angle){
+	unsigned char sign = 1;
+	
+	if((angle > 90 && angle < 270) || (angle < -90 && angle > -270))
+		sign = -1;
+	
+	return cos_val[abs(angle % 90)] * sign;
+
+}
+
+float sin(int angle){
+	unsigned char sign = 1;
+	int ii = 0;
+	
+	if((angle > 180 && angle < 360) || (angle < 0 && angle > -180))
+		sign = -1;
+		
+	if (angle % 90 == 0){
+		ii = 0;
+	}
+	else if(angle > 90 && angle < 180 || angle > 270 && angle < 360){
+		ii = angle % 90;
+	}
+	else{ 
+		ii = 90 - (angle % 90);
+	}
+	
+	return cos_val[abs(ii)] * sign;
+
+}
+
+
+#endif

@@ -23,8 +23,6 @@
 void init_Serial_Port(void);
 void execute_Command(void);
 
-static void get_Command(char*, unsigned char*);
-
 //P1.0 and P1.1 are used for serial
 void init_Serial_Port(void){
 	
@@ -43,38 +41,11 @@ void execute_Command(void)
 {
 	idata unsigned char angle = 0;
 	idata char command = NONE;
-	
-	get_Command(&command, &angle);
-	
-	if(command == FIRE_FAN_TOGGLE){
-		FIRE_FAN_PORT ^= 1;
-	}
-	else if(command == SAFETY){
-		safety_Position();
-	}
-	else if(command == COMMENCE_EXTINGUISH){
-		scan_Destroy();
-	}
-	else if (command == STANDBY){
-		initial_Scan_Position();
-	}
-	else if(command != NONE){
-		set_Max_Servo_Angle(command % NUM_OF_SERVOS, angle, 0);
-	}
-
-		
-}
-
-//check if any commands from serial
-static void get_Command(char* command, unsigned char* angle)
-{
-
 	idata char buffer[5];
 	idata unsigned char ii = 0;
 	
 	buffer[ii] = getchar();
-	
-	
+		
 	while(buffer[ii] != '\0' && buffer[ii] != '\n' && buffer[ii] != '\r' && ii < 5 - 1)
 	{
 		buffer[++ii] = getchar();
@@ -89,7 +60,7 @@ static void get_Command(char* command, unsigned char* angle)
 			return;
 		}
 		else{
-			*angle = atoi(buffer + 1);
+			angle = atoi(buffer + 1);
 		}
 	}
 	
@@ -97,37 +68,53 @@ static void get_Command(char* command, unsigned char* angle)
 	switch(buffer[0])
 	{
 		case('s'):
-			*command = SHOULDER;	
+			command = SHOULDER;	
 			break;
 		case('b'):					
-			if(*angle <= 135){
-				*command = BICEP;
-			}
-			else{
-				printf_tiny("Max is 145");
+			if(angle <= 135){
+				command = BICEP;
 			}
 			break;
 		case('e'):
-			*command = ELBOW;
+			command = ELBOW;
 			break;
 		case('w'):
-			*command = WRIST;
+			command = WRIST;
 			break;
 		case('f'):
-			*command = FIRE_FAN_TOGGLE;
+			command = FIRE_FAN_TOGGLE;
 			break;
 		case('x'):
-			*command = SAFETY;
+			command = SAFETY;
 			break;
 		case('C'):
-			*command = COMMENCE_EXTINGUISH;
+			command = COMMENCE_EXTINGUISH;
 			break;
 		case('R'):
-			*command = STANDBY;
+			command = STANDBY;
 			break;
 	}
 	
+	if(command == FIRE_FAN_TOGGLE){
+		FIRE_FAN_PORT ^= 1;
+	}
+	else if(command == SAFETY){
+		safety_Position();
+	}
+	else if(command == COMMENCE_EXTINGUISH){
+		scan_Destroy();
+	}
+	else if (command == STANDBY){
+		initial_Scan_Position();
+	}
+	
+	else if(command != NONE){
+		set_Max_Servo_Angle(command % NUM_OF_SERVOS, angle, 0);
+	}
+
 }
+
+
 
 
 

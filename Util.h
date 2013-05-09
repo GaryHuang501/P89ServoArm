@@ -7,11 +7,11 @@
 
 void wait5ms(void);
 void wait30ms(void);
-void wait50ms(void);
 void wait1S (void);
 
 void wait5ms (void)
 {
+
 	_asm
 	mov R2, #2
 L33: mov R1, #25

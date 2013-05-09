@@ -28,9 +28,9 @@
 #define WRIST 0
 
 //Set angles
-idata unsigned char servo_Angle[NUM_OF_SERVOS];
-idata unsigned char max_Servo_Angle[NUM_OF_SERVOS];
-idata const char servo_Offset[NUM_OF_SERVOS] = {SERVO_WRIST_OFFSET, SERVO_ELBOW_OFFSET, SERVO_BICEP_OFFSET, SERVO_SHOULDER_OFFSET};
+data unsigned char servo_Angle[NUM_OF_SERVOS];
+data unsigned char max_Servo_Angle[NUM_OF_SERVOS];
+data const char servo_Offset[NUM_OF_SERVOS] = {SERVO_WRIST_OFFSET, SERVO_ELBOW_OFFSET, SERVO_BICEP_OFFSET, SERVO_SHOULDER_OFFSET};
 
 
 #endif
